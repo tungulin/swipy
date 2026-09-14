@@ -1,0 +1,17 @@
+services:
+  swipy-postgres:
+    image: postgres:18.1-bookworm
+    container_name: swipy-env-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
+    restart: always
+
+  swipy-migrate:
+    image: migrate/migrate:v4.20.1
+    volumes:
+      - ${PROJECT_ROOT}/migrations:/migrations
+    restart: always
