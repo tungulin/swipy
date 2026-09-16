@@ -38,4 +38,6 @@ migrate-action:
 		-path /migrations \
 		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@swipy-postgres:5432/${POSTGRES_DB}??sslmode=disable \
 		"${action}"
- 
+
+ swipy-run: 
+	@go run cmd/swipy/main.go
