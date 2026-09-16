@@ -14,6 +14,12 @@ env-cleanup:
 	docker compose down swipy-postgres && \
 	rm -rf out/pgdata
 
+env-port-forward:
+	@docker compose up -d port-forwarder
+	
+env-port-close:
+	@docker compose down port-forwarder
+
 migrate-create: 
 	docker compose run --rm swipy-migrate \
 		create \
