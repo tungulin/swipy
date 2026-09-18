@@ -2,9 +2,13 @@ CREATE SCHEMA swipy;
 
 CREATE TABLE swipy.users (
     id SERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE,
+    provider VARCHAR(20) NOT NULL CHECK (provider IN ('telegram', 'vk')),
+    external_id BIGINT NOT NULL,
     first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL
+    last_name VARCHAR(100),
+    avatar_url VARCHAR(500),
+    language VARCHAR(10),
+    UNIQUE (provider, external_id)
 );
 
 CREATE TABLE swipy.language (
