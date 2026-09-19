@@ -1,0 +1,33 @@
+package core_http_response
+
+import "net/http"
+
+var (
+	StatusCodeInitialized = -1
+)
+
+type ResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
+	return &ResponseWriter{
+		ResponseWriter: w,
+		statusCode:     StatusCodeInitialized,
+	}
+}
+
+func (rw *ResponseWriter) WriteHeader(statusCode int) {
+	rw.ResponseWriter.WriteHeader(statusCode)
+	rw.statusCode = statusCode
+}
+
+func (rw *ResponseWriter) GetStatusCodeOrPanic() int {
+
+	if rw.statusCode == StatusCodeInitialized {
+		panic("status code is not initialized ")
+	}
+
+	return rw.statusCode
+}

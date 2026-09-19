@@ -3,9 +3,11 @@ package core_http_middleware
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	core_logger "github.com/tungulin/swipy/internal/core/logger"
+	core_http_response "github.com/tungulin/swipy/internal/core/transport/http/response"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +16,6 @@ const (
 )
 
 func RequestID() Middleware {
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(requestIDHeader)
@@ -44,6 +45,50 @@ func Logger(log *core_logger.Logger) Middleware {
 			ctx := context.WithValue(r.Context(), "log", l)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func Panic() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			log := core_logger.FromContext(ctx)
+			responseHandler := core_http_response.NewHTTPResponseHandler(log, w)
+
+			defer func() {
+				if p := recover(); p != nil {
+					responseHandler.PanicResponse(p, "HTTP request got unexptected panic")
+				}
+			}()
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func Trace() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			log := core_logger.FromContext(ctx)
+			rw := core_http_response.NewResponseWriter(w)
+
+			beforeTime := time.Now()
+
+			log.Debug(
+				">>> incoming HTTP request",
+				zap.Time("time", beforeTime),
+			)
+
+			next.ServeHTTP(rw, r)
+
+			log.Debug(
+				">>> done HTTP request",
+				zap.Int("status_code", rw.GetStatusCodeOrPanic()),
+				zap.Duration("latency", time.Since(beforeTime)),
+			)
+
 		})
 	}
 }
