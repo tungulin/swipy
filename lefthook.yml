@@ -1,0 +1,5 @@
+commit-msg:
+  jobs:
+    - name: branch prefix
+      script: "branch-prefix.sh"
+      runner: sh
