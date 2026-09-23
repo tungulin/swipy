@@ -54,7 +54,7 @@ func NewLogger(config Config) (*Logger, error) {
 
 	core := zapcore.NewTee(
 		zapcore.NewCore(zapEncoder, zapcore.AddSync(os.Stdout), zapLvl),
-		zapcore.NewCore(zapEncoder, zapcore.AddSync(os.Stdout), zapLvl),
+		zapcore.NewCore(zapEncoder, zapcore.AddSync(logFile), zapLvl),
 	)
 
 	zapLogger := zap.New(core, zap.AddCaller())

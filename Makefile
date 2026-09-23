@@ -40,4 +40,6 @@ migrate-action:
 		"${action}"
 
  swipy-run: 
-	@go run cmd/swipy/main.go
+	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	go mod tidy && \
+	go run cmd/swipy/main.go

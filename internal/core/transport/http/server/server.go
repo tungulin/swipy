@@ -24,7 +24,7 @@ func NewHTTPServer(config Config, log *core_logger.Logger) *HTTPServer {
 	}
 }
 
-func (h *HTTPServer) RegisterAPIRouters(routes ...APIVersionRouter) {
+func (h *HTTPServer) RegisterAPIRouters(routes ...*APIVersionRouter) {
 	for _, router := range routes {
 		prefix := "/api" + string(router.apiVersion)
 
@@ -40,14 +40,13 @@ func (h *HTTPServer) Run(ctx context.Context) error {
 		Addr:    h.config.Addr,
 		Handler: h.mux,
 	}
+	h.log.Warn("start HTTP server", zap.String("addr", h.config.Addr))
 
 	ch := make(chan error, 1)
 
 	go func() {
 		defer close(ch)
 		err := server.ListenAndServe()
-
-		h.log.Warn("start HTTP server", zap.String("addr", h.config.Addr))
 
 		if !errors.Is(err, http.ErrServerClosed) {
 			ch <- err
