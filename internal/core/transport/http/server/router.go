@@ -24,7 +24,7 @@ func NewApiVersionRouter(apiVersion ApiVersion) *APIVersionRouter {
 	}
 }
 
-func (r *APIVersionRouter) RegiisterRouters(routes ...Route) {
+func (r *APIVersionRouter) RegisterRouters(routes ...Route) {
 	for _, route := range routes {
 		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
 		r.Handle(pattern, route.Handler)

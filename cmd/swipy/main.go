@@ -33,7 +33,7 @@ func main() {
 	usersRouters := usersTransportHTTP.Routes()
 
 	apiVersionRouter := core_http_server.NewApiVersionRouter(core_http_server.ApiVersion1)
-	apiVersionRouter.RegiisterRouters(usersRouters...)
+	apiVersionRouter.RegisterRouters(usersRouters...)
 
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),

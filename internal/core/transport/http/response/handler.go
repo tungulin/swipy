@@ -2,9 +2,11 @@ package core_http_response
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
+	core_errors "github.com/tungulin/swipy/internal/core/errors"
 	core_logger "github.com/tungulin/swipy/internal/core/logger"
 	"go.uber.org/zap"
 )
@@ -21,6 +23,34 @@ func NewHTTPResponseHandler(log *core_logger.Logger, rw http.ResponseWriter) *HT
 	}
 }
 
+func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
+	var (
+		statusCode int
+		logFunc    func(string, ...zap.Field)
+	)
+
+	switch {
+	case errors.Is(err, core_errors.ErrConflict):
+		statusCode = http.StatusBadRequest
+		logFunc = h.log.Warn
+
+	case errors.Is(err, core_errors.ErrNotFound):
+		statusCode = http.StatusNotFound
+		logFunc = h.log.Debug
+
+	case errors.Is(err, core_errors.ErrConflict):
+		statusCode = http.StatusConflict
+		logFunc = h.log.Warn
+
+	default:
+		statusCode = http.StatusInternalServerError
+		logFunc = h.log.Error
+	}
+
+	logFunc(msg, zap.Error(err))
+	h.errorReponse(statusCode, err, msg)
+}
+
 func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	statusCode := http.StatusInternalServerError
 	err := fmt.Errorf("unexcpected panic: %v", p)
@@ -29,6 +59,13 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 
 	h.rw.WriteHeader(statusCode)
 
+	h.errorReponse(statusCode,
+		err,
+		msg,
+	)
+}
+
+func (h *HTTPResponseHandler) errorReponse(statusCode int, err error, msg string) {
 	response := map[string]string{
 		"message": msg,
 		"err":     err.Error(),
@@ -37,5 +74,4 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	if err := json.NewEncoder(h.rw).Encode(response); err != nil {
 		h.log.Error("write HTTP response", zap.Error(err))
 	}
-
 }
