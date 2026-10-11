@@ -19,7 +19,7 @@ type Config struct {
 func NewConfig() (Config, error) {
 	var config Config
 
-	if err := envconfig.Process("POSTRGRES", &config); err != nil {
+	if err := envconfig.Process("POSTGRES", &config); err != nil {
 		return Config{}, fmt.Errorf("process env config: %w", err)
 	}
 

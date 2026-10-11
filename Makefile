@@ -41,5 +41,6 @@ migrate-action:
 
  swipy-run: 
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export POSTGRES_HOST=localhost &&\
 	go mod tidy && \
 	go run cmd/swipy/main.go
