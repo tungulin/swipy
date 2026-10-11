@@ -7,20 +7,23 @@ import (
 	"net/http"
 
 	core_logger "github.com/tungulin/swipy/internal/core/logger"
+	core_http_middleware "github.com/tungulin/swipy/internal/core/transport/http/middleware"
 	"go.uber.org/zap"
 )
 
 type HTTPServer struct {
-	mux    *http.ServeMux
-	config Config
-	log    *core_logger.Logger
+	mux        *http.ServeMux
+	config     Config
+	log        *core_logger.Logger
+	middleware []core_http_middleware.Middleware
 }
 
-func NewHTTPServer(config Config, log *core_logger.Logger) *HTTPServer {
+func NewHTTPServer(config Config, log *core_logger.Logger, middleware ...core_http_middleware.Middleware) *HTTPServer {
 	return &HTTPServer{
-		mux:    http.NewServeMux(),
-		config: config,
-		log:    log,
+		mux:        http.NewServeMux(),
+		config:     config,
+		log:        log,
+		middleware: middleware,
 	}
 }
 
@@ -36,9 +39,12 @@ func (h *HTTPServer) RegisterAPIRouters(routes ...*APIVersionRouter) {
 }
 
 func (h *HTTPServer) Run(ctx context.Context) error {
+
+	mux := core_http_middleware.ChainMiddleware(h.mux, h.middleware...)
+
 	server := &http.Server{
 		Addr:    h.config.Addr,
-		Handler: h.mux,
+		Handler: mux,
 	}
 	h.log.Warn("start HTTP server", zap.String("addr", h.config.Addr))
 

@@ -1,8 +1,13 @@
 package users_postgres_repository
 
+import core_postgres_pool "github.com/tungulin/swipy/internal/core/repository/pool"
+
 type UsersRepository struct {
+	pool core_postgres_pool.Pool
 }
 
-func NewUsersRepository() *UsersRepository {
-	return &UsersRepository{}
+func NewUsersRepository(pool core_postgres_pool.Pool) *UsersRepository {
+	return &UsersRepository{
+		pool: pool,
+	}
 }
