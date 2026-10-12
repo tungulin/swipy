@@ -7,31 +7,39 @@ import (
 )
 
 type User struct {
-	ID        int
-	UserId    int
-	FirstName string
-	LastName  *string
-	AvatarURL *string
-	Language  string
+	ID         int
+	UserId     int
+	Provider   string
+	ExternalID int64
+	FirstName  string
+	LastName   *string
+	AvatarURL  *string
+	Language   string
 }
 
 func NewUser(
 	id int,
+	provider string,
+	externalID int64,
 	firstName string,
 	lastName *string,
 	avatarURL *string,
 	language string,
 ) User {
 	return User{
-		ID:        id,
-		FirstName: firstName,
-		LastName:  lastName,
-		AvatarURL: avatarURL,
-		Language:  language,
+		ID:         id,
+		Provider:   provider,
+		ExternalID: externalID,
+		FirstName:  firstName,
+		LastName:   lastName,
+		AvatarURL:  avatarURL,
+		Language:   language,
 	}
 }
 
 func NewUserUnitialized(
+	provider string,
+	externalID int64,
 	firstName string,
 	lastName *string,
 	avatarURL *string,
@@ -39,6 +47,8 @@ func NewUserUnitialized(
 ) User {
 	return NewUser(
 		UninitializedID,
+		provider,
+		externalID,
 		firstName,
 		lastName,
 		avatarURL,
@@ -47,6 +57,20 @@ func NewUserUnitialized(
 }
 
 func (u *User) Validate() error {
+	if u.Provider != "telegram" && u.Provider != "vk" {
+		return fmt.Errorf("invalid `Provider`: %q: %w",
+			u.Provider,
+			core_errors.ErrInvalidArgument,
+		)
+	}
+
+	if u.ExternalID <= 0 {
+		return fmt.Errorf("invalid `ExternalID`: %d: %w",
+			u.ExternalID,
+			core_errors.ErrInvalidArgument,
+		)
+	}
+
 	firstNameLength := len([]rune(u.FirstName))
 	if firstNameLength < 2 || firstNameLength > 100 {
 		return fmt.Errorf("invalid `FirstName`: %d: %w",

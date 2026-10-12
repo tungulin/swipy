@@ -11,7 +11,7 @@ env-down:
 	docker compose down swipy-postgres
 
 env-cleanup: 
-	docker compose down swipy-postgres && \
+	docker compose down swipy-postgres port-forwarder && \
 	rm -rf out/pgdata
 
 env-port-forward:
@@ -28,15 +28,15 @@ migrate-create:
 		-seq "$(seq)"
 
 migrate-up: 
-	make migrate-action=up
+	make migrate-action action=up
 	
 migrate-down: 
-	make migrate-action=down 
+	make migrate-action action=down
 
 migrate-action: 
 	docker compose run --rm swipy-migrate \
 		-path /migrations \
-		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@swipy-postgres:5432/${POSTGRES_DB}??sslmode=disable \
+		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@swipy-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		"${action}"
 
  swipy-run: 

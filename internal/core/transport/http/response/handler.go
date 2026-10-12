@@ -39,7 +39,7 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 	)
 
 	switch {
-	case errors.Is(err, core_errors.ErrConflict):
+	case errors.Is(err, core_errors.ErrInvalidArgument):
 		statusCode = http.StatusBadRequest
 		logFunc = h.log.Warn
 
@@ -77,7 +77,7 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 func (h *HTTPResponseHandler) errorReponse(statusCode int, err error, msg string) {
 	response := map[string]string{
 		"message": msg,
-		"err":     err.Error(),
+		"error":   err.Error(),
 	}
 
 	h.JSONResponse(response, statusCode)

@@ -19,7 +19,7 @@ type UsersService interface {
 	) (domain.User, error)
 }
 
-func NesUsersHTTPHandler(usersService UsersService) *UsersHTTPHandler {
+func NewUsersHTTPHandler(usersService UsersService) *UsersHTTPHandler {
 	return &UsersHTTPHandler{
 		userService: usersService,
 	}

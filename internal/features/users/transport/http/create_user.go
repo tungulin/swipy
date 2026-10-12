@@ -10,18 +10,22 @@ import (
 )
 
 type CreateUserRequest struct {
-	FirstName string `json:"first_name" validate:"required,min=2,max=100"`
-	LastName  string `json:"last_name" validate:"omitempty,min=2,max=100"`
-	AvatarURL string `json:"avatar_url" validate:"omitempty,min=10,max=15"`
-	Language  string `json:"language"`
+	Provider   string `json:"provider" validate:"required,oneof=telegram vk"`
+	ExternalID int64  `json:"external_id" validate:"required,gt=0"`
+	FirstName  string `json:"first_name" validate:"required,min=2,max=100"`
+	LastName   string `json:"last_name" validate:"omitempty,min=2,max=100"`
+	AvatarURL  string `json:"avatar_url" validate:"omitempty,min=10,max=15"`
+	Language   string `json:"language"`
 }
 
 type CreateUserResponse struct {
-	ID        int
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	AvatarURL string `json:"avatar_url"`
-	Language  string `json:"language"`
+	ID         int
+	Provider   string `json:"provider"`
+	ExternalID int64  `json:"external_id"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	AvatarURL  string `json:"avatar_url"`
+	Language   string `json:"language"`
 }
 
 func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
@@ -49,15 +53,17 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 }
 
 func domainFromDTO(dto CreateUserRequest) domain.User {
-	return domain.NewUserUnitialized(dto.FirstName, &dto.LastName, &dto.AvatarURL, dto.Language)
+	return domain.NewUserUnitialized(dto.Provider, dto.ExternalID, dto.FirstName, &dto.LastName, &dto.AvatarURL, dto.Language)
 }
 
 func dtoFromDomain(user domain.User) CreateUserResponse {
 	return CreateUserResponse{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  *user.LastName,
-		AvatarURL: *user.AvatarURL,
-		Language:  user.Language,
+		ID:         user.ID,
+		Provider:   user.Provider,
+		ExternalID: user.ExternalID,
+		FirstName:  user.FirstName,
+		LastName:   *user.LastName,
+		AvatarURL:  *user.AvatarURL,
+		Language:   user.Language,
 	}
 }
