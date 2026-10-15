@@ -11,8 +11,7 @@ import (
 	core_postgres_pool "github.com/tungulin/swipy/internal/core/repository/pool"
 	core_http_middleware "github.com/tungulin/swipy/internal/core/transport/http/middleware"
 	core_http_server "github.com/tungulin/swipy/internal/core/transport/http/server"
-	users_postgres_repository "github.com/tungulin/swipy/internal/features/users/repository/postgres"
-	users_service "github.com/tungulin/swipy/internal/features/users/service"
+	"github.com/tungulin/swipy/internal/features/users"
 	users_transport_http "github.com/tungulin/swipy/internal/features/users/transport/http"
 	"go.uber.org/zap"
 )
@@ -43,12 +42,7 @@ func main() {
 	defer pool.Close()
 
 	logger.Debug("initializing feature", zap.String("feature", "users"))
-	usersRepository := users_postgres_repository.NewUsersRepository(pool)
-	usersService := users_service.NewUsersService(usersRepository)
-	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(
-		usersService,
-		users_transport_http.NewVKConfigMust(),
-	)
+	usersHandler := users.NewHTTPHandler(pool, users_transport_http.NewVKConfigMust())
 
 	logger.Debug("initializing http server")
 
@@ -61,7 +55,7 @@ func main() {
 		core_http_middleware.Trace(),
 	)
 	apiVersionRouter := core_http_server.NewApiVersionRouter(core_http_server.ApiVersion1)
-	apiVersionRouter.RegisterRouters(usersTransportHTTP.Routes()...)
+	apiVersionRouter.RegisterRouters(usersHandler.Routes()...)
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 
 	if err := httpServer.Run(ctx); err != nil {
