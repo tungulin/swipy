@@ -15,6 +15,11 @@ type UsersRepository interface {
 		ctx context.Context,
 		user domain.User,
 	) (domain.User, error)
+
+	InitializeVKUser(
+		ctx context.Context,
+		user domain.User,
+	) (domain.User, error)
 }
 
 func NewUsersService(usersRepository UsersRepository) *UsersService {

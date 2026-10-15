@@ -40,23 +40,23 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userDomain := domainFromDTO(request)
+	userDomain := request.toDomain()
 
 	userDomain, err := h.userService.CreateUser(ctx, userDomain)
 	if err != nil {
-		responseHandler.ErrorResponse(err, "fialder to create user")
+		responseHandler.ErrorResponse(err, "fialed to create user")
 		return
 	}
 
-	response := dtoFromDomain(userDomain)
+	response := newCreateUserResponse(userDomain)
 	responseHandler.JSONResponse(response, http.StatusCreated)
 }
 
-func domainFromDTO(dto CreateUserRequest) domain.User {
-	return domain.NewUserUnitialized(dto.Provider, dto.ExternalID, dto.FirstName, &dto.LastName, &dto.AvatarURL, dto.Language)
+func (r CreateUserRequest) toDomain() domain.User {
+	return domain.NewUserUnitialized(r.Provider, r.ExternalID, r.FirstName, &r.LastName, &r.AvatarURL, r.Language)
 }
 
-func dtoFromDomain(user domain.User) CreateUserResponse {
+func newCreateUserResponse(user domain.User) CreateUserResponse {
 	return CreateUserResponse{
 		ID:         user.ID,
 		Provider:   user.Provider,
