@@ -6,45 +6,33 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	core_logger "github.com/tungulin/swipy/internal/core/logger"
-	core_http_middleware "github.com/tungulin/swipy/internal/core/transport/http/middleware"
 	"go.uber.org/zap"
 )
 
 type HTTPServer struct {
-	mux        *http.ServeMux
-	config     Config
-	log        *core_logger.Logger
-	middleware []core_http_middleware.Middleware
+	router chi.Router
+	config Config
+	log    *core_logger.Logger
 }
 
-func NewHTTPServer(config Config, log *core_logger.Logger, middleware ...core_http_middleware.Middleware) *HTTPServer {
+func NewHTTPServer(config Config, log *core_logger.Logger) *HTTPServer {
 	return &HTTPServer{
-		mux:        http.NewServeMux(),
-		config:     config,
-		log:        log,
-		middleware: middleware,
+		router: chi.NewRouter(),
+		config: config,
+		log:    log,
 	}
 }
 
-func (h *HTTPServer) RegisterAPIRouters(routes ...*APIVersionRouter) {
-	for _, router := range routes {
-		prefix := "/api/v" + string(router.apiVersion)
-
-		h.mux.Handle(
-			prefix+"/",
-			http.StripPrefix(prefix, router),
-		)
-	}
+func (h *HTTPServer) Router() chi.Router {
+	return h.router
 }
 
 func (h *HTTPServer) Run(ctx context.Context) error {
-
-	mux := core_http_middleware.ChainMiddleware(h.mux, h.middleware...)
-
 	server := &http.Server{
 		Addr:    h.config.Addr,
-		Handler: mux,
+		Handler: h.router,
 	}
 	h.log.Warn("start HTTP server", zap.String("addr", h.config.Addr))
 
@@ -69,7 +57,7 @@ func (h *HTTPServer) Run(ctx context.Context) error {
 		h.log.Warn("shutdown HTTP server")
 		shutdownContext, cancel := context.WithTimeout(
 			context.Background(),
-			h.config.ShutdownTimeuot,
+			h.config.ShutdownTimeout,
 		)
 		defer cancel()
 

@@ -6,21 +6,26 @@ import (
 	core_errors "github.com/tungulin/swipy/internal/core/errors"
 )
 
+// User — строка таблицы swipy.users. Profile (экран профиля) содержит User
+// и добавляет данные из остальных таблиц.
 type User struct {
 	ID         int
-	UserId     int
 	Provider   string
 	ExternalID int64
-	FirstName  string
+	FirstName  *string
 	LastName   *string
 	Language   string
+	Username   *string
+	Points     int
+	StreakDays int
+	Timezone   string
 }
 
 func NewUser(
 	id int,
 	provider string,
 	externalID int64,
-	firstName string,
+	firstName *string,
 	lastName *string,
 	language string,
 ) User {
@@ -37,7 +42,7 @@ func NewUser(
 func NewUserUnitialized(
 	provider string,
 	externalID int64,
-	firstName string,
+	firstName *string,
 	lastName *string,
 	language string,
 ) User {
@@ -66,12 +71,14 @@ func (u *User) Validate() error {
 		)
 	}
 
-	firstNameLength := len([]rune(u.FirstName))
-	if firstNameLength < 2 || firstNameLength > 100 {
-		return fmt.Errorf("invalid `FirstName`: %d: %w",
-			firstNameLength,
-			core_errors.ErrInvalidArgument,
-		)
+	if u.FirstName != nil {
+		firstNameLength := len([]rune(*u.FirstName))
+		if firstNameLength < 2 || firstNameLength > 100 {
+			return fmt.Errorf("invalid `FirstName`: %d: %w",
+				firstNameLength,
+				core_errors.ErrInvalidArgument,
+			)
+		}
 	}
 
 	if u.LastName != nil {

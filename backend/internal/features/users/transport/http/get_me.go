@@ -109,13 +109,13 @@ func newGetMeResponse(profile domain.Profile) GetMeResponse {
 	}
 
 	return GetMeResponse{
-		ID:        profile.ID,
-		FirstName: profile.FirstName,
-		LastName:  profile.LastName,
-		Username:  profile.Username,
-		Points:    profile.Points,
+		ID:        profile.User.ID,
+		FirstName: profile.User.FirstName,
+		LastName:  profile.User.LastName,
+		Username:  profile.User.Username,
+		Points:    profile.User.Points,
 		Stats: StatsResponse{
-			StreakDays:     profile.Stats.StreakDays,
+			StreakDays:     profile.User.StreakDays,
 			FollowersCount: profile.Stats.FollowersCount,
 			FollowingCount: profile.Stats.FollowingCount,
 		},

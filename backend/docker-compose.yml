@@ -1,3 +1,5 @@
+name: swipy
+
 services:
   swipy-postgres:
     image: postgres:18.1-bookworm

@@ -9,6 +9,11 @@ import (
 	core_errors "github.com/tungulin/swipy/internal/core/errors"
 )
 
+type LaunchParams struct {
+	UserID   int64
+	Language string
+}
+
 // VerifyLaunchParams проверяет sign в строке launch params вида vk_user_id=...&sign=...
 // vkapps.ParamsVerify ждёт полный URL и параметры после "?", поэтому строка передаётся как RawQuery.
 func VerifyLaunchParams(launchParams string, clientSecret string) error {
@@ -26,16 +31,19 @@ func VerifyLaunchParams(launchParams string, clientSecret string) error {
 	return nil
 }
 
-func ParseUserID(launchParams string) (int64, error) {
+func ParseLaunchParams(launchParams string) (LaunchParams, error) {
 	params, err := url.ParseQuery(launchParams)
 	if err != nil {
-		return 0, fmt.Errorf("parse VK launch params: %v: %w", err, core_errors.ErrInvalidArgument)
+		return LaunchParams{}, fmt.Errorf("parse VK launch params: %v: %w", err, core_errors.ErrInvalidArgument)
 	}
 
 	vkUserID, err := strconv.ParseInt(params.Get("vk_user_id"), 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("parse vk_user_id: %v: %w", err, core_errors.ErrInvalidArgument)
+		return LaunchParams{}, fmt.Errorf("parse vk_user_id: %v: %w", err, core_errors.ErrInvalidArgument)
 	}
 
-	return vkUserID, nil
+	return LaunchParams{
+		UserID:   vkUserID,
+		Language: params.Get("vk_language"),
+	}, nil
 }

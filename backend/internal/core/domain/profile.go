@@ -1,11 +1,7 @@
 package domain
 
 type Profile struct {
-	ID           int
-	FirstName    *string
-	LastName     *string
-	Username     *string
-	Points       int
+	User         User
 	Stats        ProfileStats
 	Courses      []Course
 	FriendRaces  []FriendRace
@@ -13,7 +9,6 @@ type Profile struct {
 }
 
 type ProfileStats struct {
-	StreakDays     int
 	FollowersCount int
 	FollowingCount int
 }

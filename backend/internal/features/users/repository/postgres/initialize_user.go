@@ -7,7 +7,7 @@ import (
 	"github.com/tungulin/swipy/internal/core/domain"
 )
 
-func (r *UsersRepository) InitializeVKUser(
+func (r *UsersRepository) InitializeUser(
 	ctx context.Context,
 	user domain.User,
 ) (domain.User, error) {
@@ -18,34 +18,14 @@ func (r *UsersRepository) InitializeVKUser(
 		INSERT INTO swipy.users (provider, external_id, first_name, last_name, language)
 		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (provider, external_id) DO UPDATE SET provider = EXCLUDED.provider
-		RETURNING id, provider, external_id, first_name, last_name, language
-	`
+		RETURNING ` + userColumns
 
 	row := r.pool.QueryRow(ctx, query, user.Provider, user.ExternalID, user.FirstName, user.LastName, user.Language)
 
-	var userModel UserModel
-
-	err := row.Scan(
-		&userModel.ID,
-		&userModel.Provider,
-		&userModel.ExternalID,
-		&userModel.FirstName,
-		&userModel.LastName,
-		&userModel.Language,
-	)
-
+	initialized, err := scanUser(row)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
 
-	userDomain := domain.NewUser(
-		userModel.ID,
-		userModel.Provider,
-		userModel.ExternalID,
-		userModel.FirstName,
-		userModel.LastName,
-		userModel.Language,
-	)
-
-	return userDomain, nil
+	return initialized, nil
 }

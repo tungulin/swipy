@@ -1,35 +1,9 @@
 package core_http_server
 
-import (
-	"fmt"
-	"time"
+import "time"
 
-	"github.com/kelseyhightower/envconfig"
-)
-
+// Имя переменной строится из имени поля (split_words): ShutdownTimeout -> HTTP_SHUTDOWN_TIMEOUT.
 type Config struct {
-	Addr            string        `envconfig:"HTTP_ADDR" required:"true"`
-	ShutdownTimeuot time.Duration `envconfig:"HTTP_SHUTDOWN_TIMEOUT" required:"true"`
-}
-
-func NewConfig() (Config, error) {
-	var config Config
-
-	if err := envconfig.Process("HTTP", &config); err != nil {
-		return Config{}, fmt.Errorf("proccess config: %w", err)
-	}
-
-	return config, nil
-}
-
-func NewConfigMust() Config {
-	config, err := NewConfig()
-
-	if err != nil {
-		err = fmt.Errorf("get HTTP server config: %w", err)
-		panic(err)
-	}
-
-	return config
-
+	Addr            string        `split_words:"true" required:"true"`
+	ShutdownTimeout time.Duration `split_words:"true" required:"true"`
 }

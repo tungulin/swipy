@@ -1,38 +1,12 @@
 package core_postgres_pool
 
-import (
-	"fmt"
-	"time"
-
-	"github.com/kelseyhightower/envconfig"
-)
+import "time"
 
 type Config struct {
-	Host     string        `envconfig:"HOST" required:"true"`
-	Port     string        `envconfig:"PORT" default:"5432"`
-	User     string        `envconfig:"USER" required:"true"`
-	Password string        `envconfig:"PASSWORD" required:"true"`
-	Database string        `envconfig:"DB" required:"true"`
-	Timeout  time.Duration `envconfig:"TIMEOUT" required:"true"`
-}
-
-func NewConfig() (Config, error) {
-	var config Config
-
-	if err := envconfig.Process("POSTGRES", &config); err != nil {
-		return Config{}, fmt.Errorf("process env config: %w", err)
-	}
-
-	return config, nil
-}
-
-func NewConfigMust() Config {
-	config, err := NewConfig()
-
-	if err != nil {
-		err := fmt.Errorf("get Postgres connection pool config: %w", err)
-		panic(err)
-	}
-
-	return config
+	Host     string        `split_words:"true" default:"localhost"`
+	Port     string        `split_words:"true" default:"5432"`
+	User     string        `split_words:"true" required:"true"`
+	Password string        `split_words:"true" required:"true"`
+	DB       string        `split_words:"true" required:"true"`
+	Timeout  time.Duration `split_words:"true" required:"true"`
 }

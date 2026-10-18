@@ -15,80 +15,71 @@ const (
 	requestIDHeader = "X-Request-ID"
 )
 
-func RequestID() Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID := r.Header.Get(requestIDHeader)
+func (mw *MiddlewareManager) RequestID(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := r.Header.Get(requestIDHeader)
 
-			if requestID == "" {
-				requestID = uuid.NewString()
+		if requestID == "" {
+			requestID = uuid.NewString()
+		}
+
+		r.Header.Set(requestIDHeader, requestID)
+		w.Header().Set(requestIDHeader, requestID)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (mw *MiddlewareManager) Logger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := r.Header.Get(requestIDHeader)
+
+		l := mw.log.With(
+			zap.String("request_id", requestID),
+			zap.String("url", r.URL.String()),
+		)
+
+		ctx := context.WithValue(r.Context(), "log", l)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (mw *MiddlewareManager) Panic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		log := core_logger.FromContext(ctx)
+		responseHandler := core_http_response.NewHTTPResponseHandler(log, w)
+
+		defer func() {
+			if p := recover(); p != nil {
+				responseHandler.PanicResponse(p, "HTTP request got unexptected panic")
 			}
+		}()
 
-			r.Header.Set(requestIDHeader, requestID)
-			w.Header().Set(requestIDHeader, requestID)
-
-			next.ServeHTTP(w, r)
-		})
-	}
+		next.ServeHTTP(w, r)
+	})
 }
 
-func Logger(log *core_logger.Logger) Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID := r.Header.Get(requestIDHeader)
+func (mw *MiddlewareManager) Trace(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		log := core_logger.FromContext(ctx)
+		rw := core_http_response.NewResponseWriter(w)
 
-			l := log.With(
-				zap.String("request_id", requestID),
-				zap.String("url", r.URL.String()),
-			)
+		beforeTime := time.Now()
 
-			ctx := context.WithValue(r.Context(), "log", l)
+		log.Debug(
+			">>> incoming HTTP request",
+			zap.Time("time", beforeTime),
+		)
 
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
-}
+		next.ServeHTTP(rw, r)
 
-func Panic() Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			log := core_logger.FromContext(ctx)
-			responseHandler := core_http_response.NewHTTPResponseHandler(log, w)
-
-			defer func() {
-				if p := recover(); p != nil {
-					responseHandler.PanicResponse(p, "HTTP request got unexptected panic")
-				}
-			}()
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func Trace() Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			log := core_logger.FromContext(ctx)
-			rw := core_http_response.NewResponseWriter(w)
-
-			beforeTime := time.Now()
-
-			log.Debug(
-				">>> incoming HTTP request",
-				zap.Time("time", beforeTime),
-			)
-
-			next.ServeHTTP(rw, r)
-
-			log.Debug(
-				">>> done HTTP request",
-				zap.Int("status_code", rw.GetStatusCodeOrPanic()),
-				zap.Duration("latency", time.Since(beforeTime)),
-			)
-
-		})
-	}
+		log.Debug(
+			">>> done HTTP request",
+			zap.Int("status_code", rw.GetStatusCodeOrPanic()),
+			zap.Duration("latency", time.Since(beforeTime)),
+		)
+	})
 }

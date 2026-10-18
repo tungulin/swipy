@@ -30,7 +30,7 @@ func NewConnectionPool(ctx context.Context, config Config) (*ConnectionPool, err
 		config.Password,
 		config.Host,
 		config.Port,
-		config.Database,
+		config.DB,
 	)
 
 	pgxconfig, err := pgxpool.ParseConfig(connString)

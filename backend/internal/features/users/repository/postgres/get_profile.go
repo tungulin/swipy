@@ -44,31 +44,21 @@ func (r *UsersRepository) GetProfile(
 
 func (r *UsersRepository) getProfileHeader(ctx context.Context, userID int) (domain.Profile, error) {
 	query := `
-		SELECT
-			u.id,
-			u.first_name,
-			u.last_name,
-			u.username,
-			u.points,
-			u.streak_days,
-			(SELECT count(*) FROM swipy.follow WHERE following_id = u.id),
-			(SELECT count(*) FROM swipy.follow WHERE follower_id = u.id)
-		FROM swipy.users AS u
-		WHERE u.id = $1
+		SELECT ` + userColumns + `,
+			(SELECT count(*) FROM swipy.follow WHERE following_id = users.id),
+			(SELECT count(*) FROM swipy.follow WHERE follower_id = users.id)
+		FROM swipy.users
+		WHERE id = $1
 	`
 
-	var profile domain.Profile
-
-	err := r.pool.QueryRow(ctx, query, userID).Scan(
-		&profile.ID,
-		&profile.FirstName,
-		&profile.LastName,
-		&profile.Username,
-		&profile.Points,
-		&profile.Stats.StreakDays,
-		&profile.Stats.FollowersCount,
-		&profile.Stats.FollowingCount,
+	var (
+		model UserModel
+		stats domain.ProfileStats
 	)
+
+	dest := append(model.scanDest(), &stats.FollowersCount, &stats.FollowingCount)
+
+	err := r.pool.QueryRow(ctx, query, userID).Scan(dest...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.Profile{}, fmt.Errorf("user %d: %w", userID, core_errors.ErrNotFound)
 	}
@@ -77,7 +67,10 @@ func (r *UsersRepository) getProfileHeader(ctx context.Context, userID int) (dom
 		return domain.Profile{}, fmt.Errorf("scan error: %w", err)
 	}
 
-	return profile, nil
+	return domain.Profile{
+		User:  model.toDomain(),
+		Stats: stats,
+	}, nil
 }
 
 func (r *UsersRepository) getProfileCourses(ctx context.Context, userID int) ([]domain.Course, error) {

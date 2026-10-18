@@ -7,7 +7,7 @@ import (
 	"github.com/tungulin/swipy/internal/core/domain"
 )
 
-func (s *UsersService) InitializeVKUser(
+func (s *UsersService) InitializeUser(
 	ctx context.Context,
 	user domain.User,
 ) (domain.User, error) {
@@ -15,7 +15,7 @@ func (s *UsersService) InitializeVKUser(
 		return domain.User{}, fmt.Errorf("validate user domain: %w", err)
 	}
 
-	user, err := s.usersRepository.InitializeVKUser(ctx, user)
+	user, err := s.usersRepository.InitializeUser(ctx, user)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("create user: %w", err)
 	}
