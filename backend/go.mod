@@ -3,6 +3,7 @@ module github.com/tungulin/swipy
 go 1.26.0
 
 require (
+	github.com/MarceloPetrucio/go-scalar-api-reference v0.0.0-20240521013641-ce5d2efe0e06
 	github.com/SevereCloud/vksdk/v3 v3.3.1
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-playground/validator/v10 v10.30.5

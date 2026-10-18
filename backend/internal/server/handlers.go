@@ -26,6 +26,8 @@ func (s *Server) MapHandlers(router chi.Router) {
 	router.Use(mw.Trace)
 
 	// Map routes
+	router.Get("/docs", DocsHandler)
+
 	router.Route("/api/v1", func(r chi.Router) {
 		users_transport_http.MapRoutes(r, usersHandler, mw)
 	})

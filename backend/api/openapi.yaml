@@ -1,0 +1,242 @@
+openapi: 3.1.0
+info:
+  title: Swipy API
+  version: 0.1.0
+  description: |
+    API приложения Swipy. Подробности про аутентификацию: docs/api/auth.md.
+
+servers:
+  - url: http://localhost:5050/api/v1
+    description: Локально
+
+security:
+  - platformAuth: []
+
+tags:
+  - name: users
+    description: Пользователи и профиль
+
+paths:
+  /users/initialize:
+    post:
+      tags: [users]
+      operationId: initializeUser
+      summary: Инициализировать пользователя
+      description: |
+        Создаёт пользователя по `provider + external_id` из заголовка `Authorization`
+        или возвращает уже созданного. Платформу определяет схема заголовка. Тела у запроса нет.
+      responses:
+        "201":
+          description: Пользователь создан или уже существовал
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InitializeUserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /users/me:
+    get:
+      tags: [users]
+      operationId: getMe
+      summary: Профиль текущего пользователя
+      description: |
+        Возвращает весь экран профиля одним ответом. Перед ответом сервер лениво
+        сбрасывает просроченные серии, поэтому `streak_days` может измениться.
+      responses:
+        "200":
+          description: Профиль
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetMeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Подпись верна, но пользователь не инициализирован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    platformAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        `Authorization: <схема> <данные>`. Сейчас поддерживается схема `vk`:
+        `vk vk_user_id=1&vk_language=ru&vk_ts=1760700000&sign=...` (launch params VK Mini App).
+
+  responses:
+    BadRequest:
+      description: Некорректные данные
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Нет заголовка `Authorization`, неизвестная схема или неверная подпись
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Внутренняя ошибка
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [message, error]
+      properties:
+        message:
+          type: string
+          examples: ["failed to authenticate"]
+        error:
+          type: string
+          examples: ["invalid VK sign: unauthorized"]
+
+    InitializeUserResponse:
+      type: object
+      required: [ID, provider, external_id, first_name, last_name, language]
+      properties:
+        ID:
+          type: integer
+          description: ID пользователя в Swipy
+        provider:
+          type: string
+          enum: [vk, telegram, internal]
+        external_id:
+          type: integer
+          format: int64
+        first_name:
+          type: [string, "null"]
+        last_name:
+          type: [string, "null"]
+        language:
+          type: string
+          examples: ["ru"]
+
+    GetMeResponse:
+      type: object
+      required: [id, first_name, last_name, username, points, stats, courses, friend_races, achievements]
+      properties:
+        id:
+          type: integer
+          description: ID пользователя в Swipy
+        first_name:
+          type: [string, "null"]
+        last_name:
+          type: [string, "null"]
+        username:
+          type: [string, "null"]
+          description: Ник без `@`
+        points:
+          type: integer
+          description: Количество очков
+        stats:
+          $ref: "#/components/schemas/Stats"
+        courses:
+          type: array
+          description: Все курсы пользователя в порядке добавления
+          items:
+            $ref: "#/components/schemas/Course"
+        friend_races:
+          type: array
+          description: Не более 5 забегов, сначала с большим `streak_days`
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/FriendRace"
+        achievements:
+          type: array
+          description: Ровно 4 элемента, сначала полученные, затем заблокированные
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/Achievement"
+
+    Stats:
+      type: object
+      required: [streak_days, followers_count, following_count]
+      properties:
+        streak_days:
+          type: integer
+          description: Дней занятий подряд
+        followers_count:
+          type: integer
+          description: Число подписчиков
+        following_count:
+          type: integer
+          description: Число подписок
+
+    Course:
+      type: object
+      required: [id, language, level]
+      properties:
+        id:
+          type: integer
+          description: ID курса (swipy.user_language_pair.id)
+        language:
+          $ref: "#/components/schemas/Language"
+        level:
+          type: integer
+          description: Уровень в этом курсе
+
+    Language:
+      type: object
+      required: [code, name, icon]
+      properties:
+        code:
+          type: string
+          description: ISO 639-1
+          examples: ["en"]
+        name:
+          type: string
+          examples: ["English"]
+        icon:
+          type: string
+
+    FriendRace:
+      type: object
+      required: [id, friend, streak_days]
+      properties:
+        id:
+          type: integer
+        friend:
+          $ref: "#/components/schemas/RaceFriend"
+        streak_days:
+          type: integer
+          description: Сколько дней подряд оба выполнили ежедневные задания
+
+    RaceFriend:
+      type: object
+      required: [id, username]
+      properties:
+        id:
+          type: integer
+        username:
+          type: [string, "null"]
+
+    Achievement:
+      type: object
+      required: [id, icon_url, is_locked]
+      properties:
+        id:
+          type: integer
+        icon_url:
+          type: string
+          format: uri
+        is_locked:
+          type: boolean
+          description: "`true`: достижение ещё не получено"
