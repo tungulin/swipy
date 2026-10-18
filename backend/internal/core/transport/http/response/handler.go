@@ -24,6 +24,7 @@ func NewHTTPResponseHandler(log *core_logger.Logger, rw http.ResponseWriter) *HT
 }
 
 func (h *HTTPResponseHandler) JSONResponse(responseBody any, statusCode int) {
+	h.rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 	h.rw.WriteHeader(statusCode)
 
 	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {
@@ -69,8 +70,6 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	err := fmt.Errorf("unexcpected panic: %v", p)
 
 	h.log.Error(msg, zap.Error(err))
-
-	h.rw.WriteHeader(statusCode)
 
 	h.errorReponse(statusCode,
 		err,

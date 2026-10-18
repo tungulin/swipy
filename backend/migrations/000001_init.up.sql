@@ -7,7 +7,7 @@ CREATE TABLE swipy.users (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     language VARCHAR(10),
-    username VARCHAR(50) UNIQUE,
+    username VARCHAR(50) UNIQUE NOT NULL,
     points INT NOT NULL DEFAULT 0,
     streak_days INT NOT NULL DEFAULT 0,
     timezone VARCHAR(50) NOT NULL DEFAULT 'UTC',

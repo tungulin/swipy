@@ -33,7 +33,7 @@ type FriendRace struct {
 
 type RaceFriend struct {
 	ID       int
-	Username *string
+	Username string
 }
 
 type ProfileAchievement struct {

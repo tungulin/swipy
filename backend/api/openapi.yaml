@@ -109,7 +109,7 @@ components:
 
     InitializeUserResponse:
       type: object
-      required: [ID, provider, external_id, first_name, last_name, language]
+      required: [ID, provider, external_id, first_name, last_name, language, username]
       properties:
         ID:
           type: integer
@@ -127,6 +127,10 @@ components:
         language:
           type: string
           examples: ["ru"]
+        username:
+          type: string
+          description: Ник, сгенерированный при создании
+          examples: ["otter_42"]
 
     GetMeResponse:
       type: object
@@ -140,7 +144,7 @@ components:
         last_name:
           type: [string, "null"]
         username:
-          type: [string, "null"]
+          type: string
           description: Ник без `@`
         points:
           type: integer
@@ -226,7 +230,7 @@ components:
         id:
           type: integer
         username:
-          type: [string, "null"]
+          type: string
 
     Achievement:
       type: object

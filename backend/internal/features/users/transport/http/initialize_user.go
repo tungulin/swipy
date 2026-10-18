@@ -10,12 +10,13 @@ import (
 )
 
 type InitializeUserResponse struct {
-	ID         int
+	ID         int     `json:"id"`
 	Provider   string  `json:"provider"`
 	ExternalID int64   `json:"external_id"`
 	FirstName  *string `json:"first_name"`
 	LastName   *string `json:"last_name"`
 	Language   string  `json:"language"`
+	Username   string  `json:"username"`
 }
 
 // InitializeUser создаёт пользователя по данным из заголовка Authorization или
@@ -48,5 +49,6 @@ func newInitializeUserResponse(user domain.User) InitializeUserResponse {
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
 		Language:   user.Language,
+		Username:   user.Username,
 	}
 }

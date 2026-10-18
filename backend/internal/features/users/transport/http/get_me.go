@@ -13,7 +13,7 @@ type GetMeResponse struct {
 	ID           int                   `json:"id"`
 	FirstName    *string               `json:"first_name"`
 	LastName     *string               `json:"last_name"`
-	Username     *string               `json:"username"`
+	Username     string                `json:"username"`
 	Points       int                   `json:"points"`
 	Stats        StatsResponse         `json:"stats"`
 	Courses      []CourseResponse      `json:"courses"`
@@ -46,8 +46,8 @@ type FriendRaceResponse struct {
 }
 
 type RaceFriendResponse struct {
-	ID       int     `json:"id"`
-	Username *string `json:"username"`
+	ID       int    `json:"id"`
+	Username string `json:"username"`
 }
 
 type AchievementResponse struct {

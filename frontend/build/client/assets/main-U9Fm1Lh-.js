@@ -1,0 +1,1 @@
+import{r as a}from"./chunk-LFPYN7LY-BgkXjyOj.js";const r=({children:x,className:m,...s})=>a.jsx("div",{className:`mx-3 pb-20 lg:pb-0 xl:mx-auto xl:max-w-[75rem] ${m??""}`,...s,children:x});export{r as M};

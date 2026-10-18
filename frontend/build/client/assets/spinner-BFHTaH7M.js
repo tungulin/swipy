@@ -1,0 +1,1 @@
+import{r as o}from"./chunk-LFPYN7LY-BgkXjyOj.js";import{j as s,i as r}from"./button-D18mvz4w.js";const i=[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]],t=s("loader-circle",i),l=({className:a,...e})=>o.jsx(t,{"aria-label":"Loading",className:r("size-4 animate-spin",a),role:"status",...e});export{l as S};

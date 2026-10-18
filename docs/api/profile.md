@@ -95,7 +95,7 @@ Authorization: vk vk_user_id=1&vk_language=ru&vk_ts=1760700000&sign=...
 | `id`         | int            | ID пользователя в Swipy                      |
 | `first_name` | string \| null | Имя                                          |
 | `last_name`  | string \| null | Фамилия                                      |
-| `username`   | string \| null | Ник без `@`; клиент показывает как `@andrey` |
+| `username`   | string         | Ник без `@`; клиент показывает как `@andrey` |
 | `points`     | int            | Количество очков пользователя («2 480»)      |
 
 **Статистика**

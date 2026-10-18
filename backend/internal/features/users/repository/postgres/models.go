@@ -20,7 +20,7 @@ type UserModel struct {
 	FirstName  *string
 	LastName   *string
 	Language   string
-	Username   *string
+	Username   string
 	Points     int
 	StreakDays int
 	Timezone   string
